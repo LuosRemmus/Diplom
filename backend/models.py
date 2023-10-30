@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pydantic import BaseModel, Field, HttpUrl
 from enum import Enum
 
@@ -19,8 +20,7 @@ class Comment(BaseModel):
     author_id: int = Field(title="ID of comment author", gt=0)
     text: str = Field(title="Comment text")
     flag_type: str = Field(title="Red or Yellow flag")
-    # todo: узнать про реализацию self-reference
-    # thread: list[Comment] = Field(default=Comment)
+    thread: list[Comment]
 
 
 class User(BaseModel):
