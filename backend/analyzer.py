@@ -22,7 +22,6 @@ def lemmatizer(sentence: str) -> str:
 def is_contains_keywords(sentence: str) -> bool:
     for keyword in KEYWORDS:
         if keyword in sentence.lower():
-            print(keyword)
             return True
     return False
 
