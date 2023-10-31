@@ -1,8 +1,8 @@
-version: "3"
+version: "3.8"
 
 services:
   postgres:
-    image: postgres:12.3-alpine
+    image: postgres:15-alpine
     ports:
       - "5432:5432"
     environment:
@@ -10,6 +10,34 @@ services:
       POSTGRES_USER: postgres
     volumes:
       - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  app:
+    container_name: "backend"
+    build: .
+    env_file:
+      - ./deploy/backend.env
+    ports:
+      - "8010:8000"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  alembic:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    env_file:
+      - .env
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      database:
+        condition: service_healthy
+
 
 volumes:
   postgres:
