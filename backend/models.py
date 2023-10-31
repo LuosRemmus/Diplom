@@ -1,6 +1,12 @@
 from __future__ import annotations
-from pydantic import BaseModel, Field, HttpUrl
+
 from enum import Enum
+
+from pydantic import BaseModel, Field, HttpUrl
+
+"""
+(стилистическая доёбка: обычно файлы с пидантиковскими моделями называют scheme.py)
+"""
 
 
 class Flag(Enum):

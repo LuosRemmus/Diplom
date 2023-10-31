@@ -1,9 +1,9 @@
 import datetime
-
 from string import punctuation
+
 from pymystem3 import Mystem
 
-from backend.config import KEYWORDS, FILTER_WORDS
+from backend.config import FILTER_WORDS, KEYWORDS
 
 
 def is_unixtime_today(unixtime: int):
@@ -12,11 +12,21 @@ def is_unixtime_today(unixtime: int):
     return today == unixtime_date
 
 
+"""В идеале работу с lemmatiser вынести в отдельный класс и как то тоже формализовать."""
+
+
 def lemmatizer(sentence: str) -> str:
     mystem = Mystem()
     lemmas = mystem.lemmatize(sentence)
-    return ' '.join(
-        [lemma for lemma in lemmas if lemma != ' ' and lemma.strip() not in punctuation and lemma not in FILTER_WORDS])
+    return " ".join(
+        [
+            lemma
+            for lemma in lemmas
+            if lemma != " "
+            and lemma.strip() not in punctuation
+            and lemma not in FILTER_WORDS
+        ]
+    )
 
 
 def is_contains_keywords(sentence: str) -> bool:
