@@ -1,6 +1,6 @@
 from __future__ import annotations
-from pydantic import BaseModel, Field, HttpUrl
 from enum import Enum
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class Flag(Enum):
@@ -8,7 +8,7 @@ class Flag(Enum):
     yellowflag = "yellowflag"
 
 
-class Post(BaseModel):
+class PostModel(BaseModel):
     post_id: int = Field(
         title="ID of VK post",
         gt=0,
@@ -34,11 +34,13 @@ class Post(BaseModel):
     )
     text: str = Field(
         title="Post text",
-        examples=["Обострение в зоне израильско-палестинского конфликта что известно к исходу 31 октября 2023 года"]
+        examples=[
+            "Обострение в зоне израильско-палестинского конфликта что известно к исходу 31 октября 2023 года"
+        ]
     )
 
 
-class Comment(BaseModel):
+class CommentModel(BaseModel):
     author_id: int = Field(
         title="ID of comment author",
         gt=0,
@@ -46,7 +48,9 @@ class Comment(BaseModel):
     )
     text: str = Field(
         title="Comment text",
-        examples=["Обострение в зоне израильско-палестинского конфликта что известно к исходу 31 октября 2023 года"]
+        examples=[
+            "Обострение в зоне израильско-палестинского конфликта что известно к исходу 31 октября 2023 года"
+        ]
     )
     flag_type: str = Field(
         title="Red or Yellow flag",
@@ -55,10 +59,10 @@ class Comment(BaseModel):
             "yellowflag"
         ]
     )
-    thread: list[Comment]
+    thread: list[CommentModel]
 
 
-class User(BaseModel):
+class UserModel(BaseModel):
     fname: str = Field(
         title="User's first name",
         examples=["Петр", "Иван", "Сидор"]
@@ -69,7 +73,9 @@ class User(BaseModel):
     )
     photo: HttpUrl = Field(
         title="URL of user's photo",
-        examples=["https://sun1-13.userapi.com/s/v1/ig2/KIR0-JA9L-TeAsSxmVNnUBH8cALig9l9RJd1VReYfWCu8IJaEgyr06LYAmttBizR8tp_foH9k3y4f4PT64E1s6Dw.jpg?size=400x400&quality=95&crop=0,276,1920,1920&ava=1"]
+        examples=[
+            "https://sun1-13.userapi.com/s/v1/ig2/KIR0-JA9L-TeAsSxmVNnUBH8cALig9l9RJd1VReYfWCu8IJaEgyr06LYAmttBizR8tp_foH9k3y4f4PT64E1s6Dw.jpg?size=400x400&quality=95&crop=0,276,1920,1920&ava=1"
+        ]
     )
     user_url: HttpUrl = Field(
         title="User URL",
@@ -97,7 +103,7 @@ class User(BaseModel):
     )
 
 
-class Group(BaseModel):
+class GroupModel(BaseModel):
     group_id: int = Field(
         title="ID of group",
         examples=[30684458]
