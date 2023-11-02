@@ -20,8 +20,8 @@ COPY alembic.ini /alembic.ini
 COPY /src /src
 
 ENV PYTHONPATH="/"
-CMD ["python3", "src/main.py"]
+CMD ["python3", "backend/main.py"]
 
 FROM development as production
 RUN poetry install --without dev --sync --no-cache
-CMD ["python3", "src/main.py"]
+CMD ["python3", "backend/main.py"]
