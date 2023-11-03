@@ -1,3 +1,5 @@
+import json
+
 from dotenv import load_dotenv
 from os import environ
 
@@ -10,4 +12,4 @@ with open("data_files/filterwords.txt", encoding="utf-8") as file:
     FILTER_WORDS = [line.strip() for line in file.readlines()]
 
 with open("data_files/keywords.txt", encoding="utf-8") as file:
-    KEYWORDS = [line.strip() for line in file.readlines()]
+    FLAGS = json.load(file)

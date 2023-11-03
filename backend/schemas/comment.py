@@ -55,9 +55,13 @@ class OutCommentModel(BaseModel):
     )
     flag_type: str = Field(
         title="Red or Yellow flag",
+        default=None,
         examples=[
             "redflag",
             "yellowflag"
         ]
     )
-    thread: list[OutCommentModel]
+    thread: list[OutCommentModel] = Field(
+        title="Comment thread",
+        default=None
+    )

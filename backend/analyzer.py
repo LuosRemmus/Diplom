@@ -3,19 +3,18 @@ import datetime
 from string import punctuation
 from pymystem3 import Mystem
 
-from backend.deploy.config import FILTER_WORDS, KEYWORDS
+from backend.schemas.flag import Flag
+from backend.deploy.config import FILTER_WORDS, FLAGS
 
 
 class Analyzer:
-    def __init__(self, sentence: str, unixtime: int, keywords: list):
-        self.sentence = sentence
-        self.lemm_sentence = self.lemmatizer()
-        self.unixtime = unixtime
-        self.keywords = keywords
+    def __init__(self, sentence: str):
+        self.sentence: str = sentence
 
-    def is_unixtime_today(self):
+    @staticmethod
+    def is_unixtime_today(unixtime):
         today = datetime.datetime.utcnow().date()
-        unixtime_date = datetime.datetime.fromtimestamp(self.unixtime).date()
+        unixtime_date = datetime.datetime.fromtimestamp(unixtime).date()
         return today == unixtime_date
 
     def lemmatizer(self) -> str:
@@ -25,8 +24,18 @@ class Analyzer:
             [lemma for lemma in lemmas if
              lemma != ' ' and lemma.strip() not in punctuation and lemma not in FILTER_WORDS])
 
-    def is_contains_keywords(self) -> bool:
-        for keyword in self.keywords:
-            if keyword in self.lemm_sentence.lower():
-                return True
-        return False
+    def check_for_flag(self) -> Flag | None:
+        lemmatized_sentence = self.lemmatizer().lower()
+
+        for redflag in FLAGS["redflags"]:
+            if redflag in lemmatized_sentence:
+                return Flag.redflag
+        else:
+            yellowflags_count = 0
+            for yellowflag in FLAGS["yellowflags"]:
+                if yellowflag in lemmatized_sentence:
+                    yellowflags_count += 1
+                if yellowflags_count > 5:
+                    return Flag.yellowflag
+            else:
+                return None

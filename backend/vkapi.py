@@ -15,83 +15,100 @@ class VKAdapter:
         self.api_version = api_version
         self.session = ClientSession()
 
-    async def get_posts(self, post_model: InPostModel) -> list[OutPostModel]:
+    async def get_posts(self, post_model: InPostModel) -> list[OutPostModel | None]:
         params = {
-            'access_token': self.access_token,
-            'v': self.api_version,
-            'domain': post_model.domain,
-            'count': post_model.count
+            "access_token": self.access_token,
+            "v": self.api_version,
+            "domain": post_model.domain,
+            "count": post_model.count
         }
         if post_model.offset:
-            params.update({'offset': post_model.offset})
+            params.update({"offset": post_model.offset})
 
         async with self.session as session:
             async with session.get(url="https://api.vk.com/method/wall.get", params=params) as response:
                 if response.status == status.HTTP_200_OK:
                     resp = await response.json()
-                    return resp["response"]["items"]
+                    posts = resp["response"]["items"]
 
-        # if response.status_code == status.HTTP_200_OK:
-        #     posts = response.json()["response"]["items"]
-        #     for post in posts:
-        #         if is_unixtime_today(post['date']):
-        #             if is_target_text(post["text"]):
-        #                 post_data = {
-        #                     "text": post["text"],
-        #                     "owner_id": post["owner_id"],
-        #                     "post_id": post["id"]
-        #                 }
-        #                 try:
-        #                     post_data["signer_id"] = post["signer_id"]
-        #                 except KeyError:
-        #                     pass
-        #                 result.append(post_data)
+        out_post_models: list[OutPostModel] = []
+        for post in posts:
+            text = post["text"]
+            date = post["date"]
+            analyzer = Analyzer(text)
+            flag_type = analyzer.check_for_flag()
+            if analyzer.is_unixtime_today(date):
+                if flag_type:
+                    post_id = post["id"]
+                    group_id = post["owner_id"]
+                    author_id = post["signer_id"]
+
+                    out_post_models.append(OutPostModel(
+                        post_id=post_id,
+                        group_id=group_id,
+                        author_id=author_id,
+                        flag_type=flag_type,
+                        text=text
+                    ))
+                else:
+                    break
+            else:
+                continue
+
+        return out_post_models
 
     async def get_comments(self, comment_model: InCommentModel) -> list[OutCommentModel]:
         params = {
-            'access_token': self.access_token,
-            'v': self.api_version,
-            'owner_id': comment_model.owner_id,
-            'post_id': comment_model.post_id,
-            'count': comment_model.count,
-            'need_likes': comment_model.need_likes,
-            'thread_items_count': comment_model.thread_items_count
+            "access_token": self.access_token,
+            "v": self.api_version,
+            "owner_id": comment_model.owner_id,
+            "post_id": comment_model.post_id,
+            "count": comment_model.count,
+            "need_likes": comment_model.need_likes,
+            "thread_items_count": comment_model.thread_items_count
         }
         if comment_model.offset:
-            params.update({'offset': comment_model.offset})
+            params.update({"offset": comment_model.offset})
 
         async with self.session as session:
             async with session.get(url="https://api.vk.com/method/wall.getComments", params=params) as response:
                 if response.status == status.HTTP_200_OK:
                     resp = await response.json()
-                    return resp["response"]["items"]
+                    comments = resp["response"]["items"]
 
-        # if response.status_code == status.HTTP_200_OK:
-        #     comments = response.json()["response"]["items"]
-        #     for comment in comments:
-        #         if is_target_text(comment["text"]):
-        #             result.append({
-        #                 "user_id": comment["from_id"],
-        #                 "text": comment["text"],
-        #                 "thread": [
-        #                     {
-        #                         "user_id": item["from_id"],
-        #                         "text": item["text"],
-        #                         "reply_to_user": item["reply_to_user"],
-        #                         "reply_to_comment": item["reply_to_comment"]
-        #                     }
-        #                     for item in comment["thread"]["items"] if item["text"]]
-        #             })
-        #
-        #     return result
-        #
-        # else:
-        #     return {'status': response.status_code, 'message': 'error'}
+        out_comment_models: list[OutCommentModel] = []
 
-    async def get_users(self, user_model: InUserModel) -> OutUserModel:
+        for comment in comments:
+            text = comment["text"]
+            analyzer = Analyzer(text)
+            flag_type = analyzer.check_for_flag()
+            if analyzer.is_unixtime_today(comment["date"]):
+                if flag_type:
+                    author_id = comment["from_id"]
+                    text = comment["text"]
+
+                    thread = comment["thread"]
+                    out_thread_models: list[OutCommentModel] = []
+                    for th in thread:
+                        th_author_id = th["from_id"]
+                        th_text = th["text"]
+                        out_thread_models.append(OutCommentModel(
+                            author_id=th_author_id,
+                            text=th_text
+                        ))
+                    out_comment_models.append(OutCommentModel(
+                        author_id=author_id,
+                        text=text,
+                        thread=out_thread_models
+                    ))
+            else:
+                break
+        return out_comment_models
+
+    async def get_users(self, user_model: InUserModel) -> list[OutUserModel]:
         params = {
             "access_token": self.access_token,
-            'v': self.api_version,
+            "v": self.api_version,
             "user_ids": user_model.user_id,
             "fields": user_model.fields
         }
@@ -100,53 +117,54 @@ class VKAdapter:
             async with session.get(url="https://api.vk.com/method/users.get", params=params) as response:
                 if response.status == status.HTTP_200_OK:
                     resp = await response.json()
-                    return resp["response"]
+                    users = resp["response"]
 
-        # if response.status_code == status.HTTP_200_OK:
-        #     users = response.json()["response"]
-        #     for user in users:
-        #         temp_user_data = {"user_id": user["id"]}
-        #
-        #         try:
-        #             temp_user_data["bdate"] = user["bdate"]
-        #         except KeyError:
-        #             temp_user_data["bdate"] = "Нет данных"
-        #
-        #         try:
-        #             temp_user_data["country"] = user["country"]["title"]
-        #         except KeyError:
-        #             temp_user_data["country"] = "Нет данных"
-        #
-        #         try:
-        #             temp_user_data["city"] = user["city"]["title"]
-        #         except KeyError:
-        #             temp_user_data["city"] = "Нет данных"
-        #
-        #         try:
-        #             temp_user_data["photo_url"] = user["photo_max_orig"]
-        #         except KeyError:
-        #             temp_user_data["photo_url"] = "Нет данных"
-        #
-        #         try:
-        #             temp_user_data["sex"] = "male" if user["sex"] == 2 else "female"
-        #         except KeyError:
-        #             temp_user_data["sex"] = "Нет данных"
-        #
-        #         result.append(temp_user_data)
-        #
-        #     return result
-        #
-        # else:
-        #     return {"status": response.status_code, "message": "error"}
+        out_user_models: list[OutUserModel] = []
+        for user in users:
+            # todo: сделать обработчик KeyError
+            fname = user["first_name"]
+            lname = user["last_name"]
+            photo = user["photo_max_orig"]
+            user_url = f"https://vk.com/id{user_model.user_id}"
+            city = user["city"]["title"]
+            country = user["country"]["title"]
+            bdate = user["bdate"]
+            sex = "male" if user["sex"] == 2 else "female"
 
-    async def get_groups(self, group_model: InGroupModel) -> OutGroupModel:
+            out_user_models.append(OutUserModel(
+                fname=fname,
+                lname=lname,
+                photo=photo,
+                user_url=user_url,
+                city=city,
+                country=country,
+                bdate=bdate,
+                sex=sex
+            ))
+        return out_user_models
+
+    async def get_groups(self, group_model: InGroupModel) -> list[OutGroupModel]:
         params = {
             "access_token": self.access_token,
             "v": self.api_version,
-            "user_id": group_model.user_id
+            "user_id": group_model.user_id,
+            "extended": 1
         }
         async with self.session as session:
             async with session.get(url="https://api.vk.com/method/groups.get", params=params) as response:
                 if response.status == status.HTTP_200_OK:
                     resp = await response.json()
-                    return resp["response"]["items"]
+                    groups = resp["response"]["items"]
+
+        out_group_models: list[OutGroupModel] = []
+        for group in groups:
+            group_id = group["id"]
+            group_name = group["name"]
+            group_url = "https://vk.com/" + group["screen_name"]
+
+            out_group_models.append(OutGroupModel(
+                group_id=group_id,
+                group_name=group_name,
+                group_url=group_url
+            ))
+        return out_group_models
