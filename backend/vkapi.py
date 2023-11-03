@@ -33,10 +33,14 @@ class VKAdapter:
 
         out_post_models: list[OutPostModel] = []
         for post in posts:
+            post.setdefault("signer_id", None)
+
             text = post["text"]
             date = post["date"]
+
             analyzer = Analyzer(text)
             flag_type = analyzer.check_for_flag()
+
             if analyzer.is_unixtime_today(date):
                 if flag_type:
                     post_id = post["id"]
@@ -121,7 +125,12 @@ class VKAdapter:
 
         out_user_models: list[OutUserModel] = []
         for user in users:
-            # todo: сделать обработчик KeyError
+            user.setdefault("photo_max_orig", None)
+            user.setdefault("city", {"title": None})
+            user.setdefault("country", {"title": None})
+            user.setdefault("bdate", None)
+            user.setdefault("sex", None)
+
             fname = user["first_name"]
             lname = user["last_name"]
             photo = user["photo_max_orig"]
@@ -129,7 +138,13 @@ class VKAdapter:
             city = user["city"]["title"]
             country = user["country"]["title"]
             bdate = user["bdate"]
-            sex = "male" if user["sex"] == 2 else "female"
+            match user["sex"]:
+                case 1:
+                    sex = "female"
+                case 2:
+                    sex = "male"
+                case _:
+                    sex = None
 
             out_user_models.append(OutUserModel(
                 fname=fname,
