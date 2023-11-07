@@ -9,8 +9,8 @@ class InUserModel(BaseModel):
     )
     fields: str = Field(
         title="Fields, which need to get",
-        default="bdate, city, country, photo_max_orig, sex, verified",
-        examples=["bdate, city, country, photo_max_orig, sex, verified"]
+        default="bdate, city, country, photo_max_orig, sex",
+        examples=["bdate, city, country, photo_max_orig, sex"]
     )
 
 

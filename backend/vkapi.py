@@ -109,7 +109,7 @@ class VKAdapter:
                 break
         return out_comment_models
 
-    async def get_users(self, user_model: InUserModel) -> list[OutUserModel]:
+    async def get_user(self, user_model: InUserModel) -> OutUserModel:
         params = {
             "access_token": self.access_token,
             "v": self.api_version,
@@ -121,10 +121,8 @@ class VKAdapter:
             async with session.get(url="https://api.vk.com/method/users.get", params=params) as response:
                 if response.status == status.HTTP_200_OK:
                     resp = await response.json()
-                    users = resp["response"]
+                    user = resp["response"][0]
 
-        out_user_models: list[OutUserModel] = []
-        for user in users:
             user.setdefault("photo_max_orig", None)
             user.setdefault("city", {"title": None})
             user.setdefault("country", {"title": None})
@@ -146,7 +144,7 @@ class VKAdapter:
                 case _:
                     sex = None
 
-            out_user_models.append(OutUserModel(
+            return OutUserModel(
                 fname=fname,
                 lname=lname,
                 photo=photo,
@@ -155,8 +153,7 @@ class VKAdapter:
                 country=country,
                 bdate=bdate,
                 sex=sex
-            ))
-        return out_user_models
+            )
 
     async def get_groups(self, group_model: InGroupModel) -> list[OutGroupModel]:
         params = {
