@@ -11,5 +11,5 @@ API_VERSION = environ.get("API_VERSION")
 with open("data_files/filterwords.txt", encoding="utf-8") as file:
     FILTER_WORDS = [line.strip() for line in file.readlines()]
 
-with open("data_files/keywords.txt", encoding="utf-8") as file:
+with open("data_files/flags.json", encoding="utf-8") as file:
     FLAGS = json.load(file)

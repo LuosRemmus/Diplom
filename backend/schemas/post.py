@@ -34,13 +34,6 @@ class OutPostModel(BaseModel):
         default=None,
         examples=[18534223]
     )
-    flag_type: Flag = Field(
-        title="Red or Yellow flag",
-        examples=[
-            "redflag",
-            "yellowflag"
-        ]
-    )
     text: str = Field(
         title="Post text",
         examples=[

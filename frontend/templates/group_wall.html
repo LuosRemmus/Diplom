@@ -24,8 +24,11 @@
 
 {% block content %}
 <div class="container">
-{% for d in data %}
-    <div style="font-family: 'Arial Black', sans-serif; font-size: 24px; color: #2325c4; border: 2px solid #2325c4;"> {{ d }} </div>
+{% for g in groups %}
+    <div style="font-family: 'Arial Black', sans-serif; font-size: 24px; color: #2325c4; border: 2px solid #2325c4;"> {{ g }}: </div>
+    {% for item in groups[g] %}
+        <div style="font-family: 'Arial Black', sans-serif; font-size: 24px; color: #ff4d4d;"> {{ item }} </div>
+    {% endfor %}
 {% endfor %}
 </div>
 {% endblock %}

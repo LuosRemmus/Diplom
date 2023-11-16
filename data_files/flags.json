@@ -1,4 +1,4 @@
 {
-  "redflags": [],
-  "yellowflags": []
+  "redflags": ["UFC", "MMA"],
+  "yellowflags": ["Джонс", "Павлович", "Хабиб", "Нурмагомедов"]
 }

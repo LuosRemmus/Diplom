@@ -11,6 +11,7 @@ class InGroupModel(BaseModel):
         title="Group info",
         ge=0,
         le=1,
+        default=1,
         examples=[0, 1]
     )
 
