@@ -1,4 +1,3 @@
-from __future__ import annotations
 from pydantic import BaseModel, Field
 
 
@@ -44,7 +43,6 @@ class InCommentModel(BaseModel):
 class OutCommentModel(BaseModel):
     author_id: int = Field(
         title="ID of comment author",
-        gt=0,
         examples=[18534223]
     )
     text: str = Field(
@@ -60,8 +58,4 @@ class OutCommentModel(BaseModel):
             "redflag",
             "yellowflag"
         ]
-    )
-    thread: list[OutCommentModel] = Field(
-        title="Comment thread",
-        default=None
     )

@@ -1,4 +1,5 @@
 import datetime
+import re
 
 from string import punctuation
 from pymystem3 import Mystem
@@ -10,12 +11,6 @@ from backend.deploy.config import FILTER_WORDS, FLAGS
 class Analyzer:
     def __init__(self, sentence: str):
         self.sentence: str = sentence
-
-    @staticmethod
-    def is_unixtime_today(unixtime):
-        today = datetime.datetime.utcnow().date()
-        unixtime_date = datetime.datetime.fromtimestamp(unixtime).date()
-        return today == unixtime_date
 
     def lemmatizer(self) -> str:
         mystem = Mystem()

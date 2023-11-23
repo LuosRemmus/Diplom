@@ -1,10 +1,9 @@
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field
 
 
 class InGroupModel(BaseModel):
     user_id: int = Field(
         title="User ID",
-        gt=0,
         examples=[12345678, 87654321]
     )
     extended: int = Field(
@@ -25,7 +24,7 @@ class OutGroupModel(BaseModel):
         title="Group name",
         examples=["BEST of MMA", "Рыбарь"]
     )
-    group_url: HttpUrl = Field(
-        title="Group URL",
-        examples=["https://vk.com/rybar_force"]
+    screen_name: str = Field(
+        title="Group domain",
+        examples=["rybar_force"]
     )

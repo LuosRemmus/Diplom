@@ -28,12 +28,11 @@ class VKAdapter:
             "access_token": self.access_token,
             "v": self.api_version,
             "domain": post_model.domain,
-            "count": 2  # post_model.count
+            "count": post_model.count
         }
 
         async with self.session() as session:
             async with session.get(url="https://api.vk.com/method/wall.get", params=params) as response:
-                logging.info("[GET POSTS] Получен ответ от api.vk.com")
                 if response.status == status.HTTP_200_OK:
                     resp = await response.json()
                     posts = resp["response"]["items"]
@@ -43,11 +42,8 @@ class VKAdapter:
                         post.setdefault("signer_id", None)
 
                         text = post["text"]
-                        date = post["date"]
-
                         analyzer = Analyzer(text)
 
-                        # if analyzer.is_unixtime_today(date):
                         post_id = post["id"]
                         group_id = post["owner_id"]
                         author_id = post["signer_id"]
@@ -58,16 +54,12 @@ class VKAdapter:
                             author_id=author_id,
                             text=text
                         )
-
                         out_post_models.append(current_model)
-                        # else:
-                        #     break
+
                     logging.info(f"[GET POSTS] Количество постов: {len(out_post_models)}")
-                    logging.info("[GET POSTS] Конец работы функции")
                     return out_post_models
 
-    async def get_comments(self, comment_model: InCommentModel) -> list[OutCommentModel]:
-        logging.info(f"[GET COMMENTS] Модель комментария на вход: {comment_model}")
+    async def get_comments(self, comment_model: InCommentModel) -> list[OutCommentModel] | None:
         params = {
             "access_token": self.access_token,
             "v": self.api_version,
@@ -82,80 +74,75 @@ class VKAdapter:
 
         async with self.session() as session:
             async with session.get(url="https://api.vk.com/method/wall.getComments", params=params) as response:
-                logging.info("[GET COMMENTS] Получен ответ от api.vk.com")
-
                 if response.status == status.HTTP_200_OK:
                     resp = await response.json()
-                    comments = resp["response"]["items"]
+                    if "response" not in resp:
+                        return None
+                    else:
+                        comments = resp["response"]["items"]
 
-                    out_comment_models: list[OutCommentModel] = []
+                        out_comment_models: list[OutCommentModel] = []
 
-                    for comment in comments:
-                        text = comment["text"]
-                        analyzer = Analyzer(text)
-                        flag_type = analyzer.check_for_flag()
-                        # if analyzer.is_unixtime_today(comment["date"]):
-                        #     if flag_type:
-                        author_id = comment["from_id"]
-                        text = comment["text"]
+                        for comment in comments:
+                            text = comment["text"]
+                            # analyzer = Analyzer(text)
+                            # flag_type = analyzer.check_for_flag()
+                            # if analyzer.is_unixtime_today(comment["date"]):
+                            #     if flag_type:
+                            author_id = comment["from_id"]
+                            if author_id < 0:
+                                continue
 
-                        thread = comment["thread"]["items"]
-                        out_thread_models: list[OutCommentModel] = []
-                        for th in thread:
-                            th_author_id = th["from_id"]
-                            th_text = th["text"]
+                            thread = comment["thread"]["items"]
+                            for th in thread:
+                                th_author_id = th["from_id"]
+                                if th_author_id < 0:
+                                    continue
+                                th_text = th["text"]
 
-                            current_th = OutCommentModel(
-                                author_id=th_author_id,
-                                text=th_text
+                                current_th = OutCommentModel(
+                                    author_id=th_author_id,
+                                    text=th_text
+                                )
+                                out_comment_models.append(current_th)
+
+                            current_comment = OutCommentModel(
+                                author_id=author_id,
+                                text=text
                             )
-
-                            out_thread_models.append(current_th)
-
-                        current_comment = OutCommentModel(
-                            author_id=author_id,
-                            text=text,
-                            thread=out_thread_models
-                        )
-                        logging.info(f"[GET COMMENTS] Данные комментария: {current_comment.dict()}")
-                        out_comment_models.append(current_comment)
-                        # else:
-                        #     break
-                    return out_comment_models
+                            out_comment_models.append(current_comment)
+                            # else:
+                            #     break
+                        return out_comment_models
 
     async def get_groups(self, group_model: InGroupModel) -> list[OutGroupModel]:
-        params = {
-            "access_token": self.access_token,
-            "v": self.api_version,
-            "user_id": group_model.user_id,
-            "extended": group_model.extended
-        }
-        async with self.session() as session:
-            async with session.get(url="https://api.vk.com/method/groups.get", params=params) as response:
-                logging.info("[GET GROUPS] получен ответ от api.vk.com")
-                if response.status == status.HTTP_200_OK:
-                    resp = await response.json()
-                    if "error" in resp:
-                        return [OutGroupModel(
-                            group_id=10101010,
-                            group_name="Profile is private",
-                            group_url="https://Profile_is_private.com",
-                        )]
-                    groups = resp["response"]["items"]
+        if group_model.user_id > 0:
+            params = {
+                "access_token": self.access_token,
+                "v": self.api_version,
+                "user_id": group_model.user_id,
+                "extended": group_model.extended
+            }
+            async with self.session() as session:
+                async with session.get(url="https://api.vk.com/method/groups.get", params=params) as response:
+                    if response.status == status.HTTP_200_OK:
+                        resp = await response.json()
+                        if "error" in resp:
+                            return [OutGroupModel(
+                                group_id=10101010,
+                                group_name="Profile is private",
+                                screen_name="Profile_is_private",
+                            )]
+                        groups = resp["response"]["items"]
 
-                    out_group_models: list[OutGroupModel] = []
-                    for group in groups:
-                        group_id = group["id"]
-                        group_name = group["name"]
-                        group_url = "https://vk.com/" + group["screen_name"]
+                        out_group_models: list[OutGroupModel] = []
+                        for group in groups:
+                            current_model = OutGroupModel(
+                                group_id=group["id"],
+                                group_name=group["name"],
+                                screen_name=group["screen_name"]
+                            )
 
-                        current_model = OutGroupModel(
-                            group_id=group_id,
-                            group_name=group_name,
-                            group_url=group_url
-                        )
-
-                        logging.info(f"[GET GROUPS] Данные групп: {current_model.dict()}")
-
-                        out_group_models.append(current_model)
-                    return out_group_models
+                            out_group_models.append(current_model)
+                        return out_group_models
+        return []

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% set encoding = 'utf-8' %}
+{% block head %}
+<style>
+    body {
+      background-color: #282828;
+    }
+    .container {
+      text-align: center;
+      padding: 20px;
+      margin: 0 auto;
+      width: 50%;
+      border: 2px solid #ccc;
+      font-family: Arial, sans-serif;
+    }
+    .container div {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      margin: 20px 0;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background-color: #3a3a3a;
+    }
+
+    tbody {
+      background-color: #525252;
+    }
+
+    tr {
+      border-bottom: 1px solid #dddddd;
+    }
+
+    tr:nth-child(even) {
+      background-color: #3a3a3a;
+    }
+
+    td, th {
+      padding: 10px;
+      text-align: left;
+      color: white;
+    }
+
+    th {
+      font-weight: bold;
+      color: white;
+    }
+    a{
+        text-decoration: none; /* убираем нижнее подчеркивание */
+        font-size: 24px; /* устанавливаем размер шрифта 24px */
+        font-family: Arial, sans-serif; /* меняем шрифт на Arial */
+    }
+
+    a.keys {
+        color: #ff2935; /* меняем цвет текста на синий */
+    }
+    a.values{
+        color: #29fff3; /* меняем цвет текста на синий */
+    }
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<table>
+    <thead>
+        <tr>
+            <th>№</th>
+            <th>Группа</th>
+            <th>Пользователи</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for g in groups %}
+        <tr>
+            <td>{{ groups[g]["num"] }}</td>
+            <td>
+                <a class="keys" href="https://vk.com/{{ g }}">
+                    {{ groups[g]["group_name"] }}
+                </a>
+            </td>
+            <td>
+            {% for item in groups[g]["users"] %}
+                <a class="values" href="{{ item }}"> {{ item }} </a>
+                <br>
+            {% endfor %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
