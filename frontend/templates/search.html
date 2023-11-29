@@ -46,8 +46,14 @@
 
 {% block content %}
 
-<form action="http://127.0.0.1:8000/vk-posts" method="GET" class="search-form">
-    <input type="text" name="domain" placeholder="Domain" class="search-input">
+<form action="http://127.0.0.1:8000/vk/posts" method="GET" class="search-form">
+    <input type="text" name="domain" placeholder="Домен группы ВКонтакте" class="search-input">
+    <br>
+    <button class="search-button">Submit</button>
+</form>
+
+<form action="http://127.0.0.1:8000/tg/comments" method="GET" class="search-form">
+    <input type="text" name="channels_names" placeholder="Домены обсуждений ТГ-каналов (через пробел)" class="search-input">
     <br>
     <button class="search-button">Submit</button>
 </form>

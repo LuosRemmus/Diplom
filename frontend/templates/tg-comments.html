@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% set encoding = 'utf-8' %}
 {% block head %}
 <style>
     body {
@@ -9,7 +9,8 @@
       text-align: center;
       padding: 20px;
       margin: 0 auto;
-      width: 100%;
+      width: 50%;
+      border: 2px solid #ccc;
       font-family: Arial, sans-serif;
     }
     .container div {
@@ -18,7 +19,7 @@
       margin-bottom: 10px;
     }
     table {
-      width: 90%;
+      width: 100%;
       margin: 20px 0;
       border-collapse: collapse;
     }
@@ -51,42 +52,30 @@
     }
     a{
         text-decoration: none; /* убираем нижнее подчеркивание */
+        font-size: 24px; /* устанавливаем размер шрифта 24px */
         font-family: Arial, sans-serif; /* меняем шрифт на Arial */
-        color: white;
     }
-    
+
 </style>
 {% endblock %}
 
 {% block content %}
-    <a class="search-button" href="http://127.0.0.1:8000/vk/groups">Show groups</a>
+<a class="search-button" href="http://127.0.0.1:8000/tg/channels">Show channels</a>
 <div class="container">
 <table>
     <thead>
         <tr>
-            <th>Ссылка на пост</th>
-            <th>Текст поста</th>
-            <th>Комментарии</th>
+            <th>Имя канала</th>
+            <th>ID пользователя</th>
+            <th>Текст сообщения</th>
         </tr>
     </thead>
     <tbody>
-    {% for post in posts %}
+    {% for comment in comments %}
         <tr>
-            <td><a href="{{ post["post_url"] }}" style="font-size: 24px"> {{ post["post_url"] }}</a></td>
-            <td>{{ post["post_text"] }}</td>
-            <td>
-                <table>
-                    <tbody>
-                    {% for comment in post["comments"] %}
-                        <tr>
-                            <td><a href="https://vk.com/id{{ comment["author_id"] }}"> https://vk.com/id{{ comment["author_id"] }}</a></td>
-                            <td style="font-family: 'Arial', sans-serif; font-size: 14px; color: #e0e0e0;;"> {{ comment["text"] }} </td>
-                            <td style="font-family: 'Arial Black', sans-serif; font-size: 14px; color: #ff4d4d;"> {{ comment["flag_type"] }} </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </td>
+            <td>{{ comment["channel"] }}</td>
+            <td>{{ comment["user_id"] }}</td>
+            <td>{{ comment["message"] }}</td>
         </tr>
     {% endfor %}
     </tbody>
