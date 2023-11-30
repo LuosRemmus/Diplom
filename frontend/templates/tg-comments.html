@@ -68,6 +68,7 @@
             <th>Имя канала</th>
             <th>ID пользователя</th>
             <th>Текст сообщения</th>
+            <th>Флаг</th>
         </tr>
     </thead>
     <tbody>
@@ -76,6 +77,7 @@
             <td>{{ comment["channel"] }}</td>
             <td>{{ comment["user_id"] }}</td>
             <td>{{ comment["message"] }}</td>
+            <td>{{ comment["flag"] }}</td>
         </tr>
     {% endfor %}
     </tbody>

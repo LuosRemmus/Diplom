@@ -39,11 +39,10 @@ class VKAdapter:
 
                     out_post_models: list[OutPostModel] = []
                     for post in posts:
-                        post.setdefault("signer_id", None)
-
                         text = post["text"]
-                        analyzer = Analyzer(text)
-
+                        post.setdefault("signer_id", None)
+                        
+                        
                         post_id = post["id"]
                         group_id = post["owner_id"]
                         author_id = post["signer_id"]
@@ -85,34 +84,39 @@ class VKAdapter:
 
                         for comment in comments:
                             text = comment["text"]
-                            # analyzer = Analyzer(text)
-                            # flag_type = analyzer.check_for_flag()
-                            # if analyzer.is_unixtime_today(comment["date"]):
-                            #     if flag_type:
-                            author_id = comment["from_id"]
-                            if author_id < 0:
-                                continue
-
-                            thread = comment["thread"]["items"]
-                            for th in thread:
-                                th_author_id = th["from_id"]
-                                if th_author_id < 0:
+                            analyzer = Analyzer(text)
+                            flag_type = analyzer.check_for_flag()
+                            if flag_type:
+                                author_id = comment["from_id"]
+                                if author_id < 0:
                                     continue
-                                th_text = th["text"]
 
-                                current_th = OutCommentModel(
-                                    author_id=th_author_id,
-                                    text=th_text
+                                thread = comment["thread"]["items"]
+                                for th in thread:
+                                    th_text = th["text"]
+
+                                    th_analyzer = Analyzer(th_text)
+                                    th_flag_type = th_analyzer.check_for_flag()
+
+                                    if th_flag_type is not None:
+                                        th_author_id = th["from_id"]
+                                        if th_author_id < 0:
+                                            continue
+
+                                        current_th = OutCommentModel(
+                                            author_id=th_author_id,
+                                            text=th_text,
+                                            flag_type=th_flag_type.value
+                                        )
+                                        out_comment_models.append(current_th)
+
+                                current_comment = OutCommentModel(
+                                    author_id=author_id,
+                                    text=text,
+                                    flag_type=flag_type.value
                                 )
-                                out_comment_models.append(current_th)
+                                out_comment_models.append(current_comment)
 
-                            current_comment = OutCommentModel(
-                                author_id=author_id,
-                                text=text
-                            )
-                            out_comment_models.append(current_comment)
-                            # else:
-                            #     break
                         return out_comment_models
 
     async def get_groups(self, group_model: InGroupModel) -> list[OutGroupModel]:

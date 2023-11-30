@@ -1,6 +1,3 @@
-import datetime
-import re
-
 from string import punctuation
 from pymystem3 import Mystem
 
@@ -30,7 +27,7 @@ class Analyzer:
             for yellowflag in FLAGS["yellowflags"]:
                 if yellowflag in lemmatized_sentence:
                     yellowflags_count += 1
-                if yellowflags_count > 5:
+                if yellowflags_count > 1:
                     return Flag.yellowflag
             else:
                 return None

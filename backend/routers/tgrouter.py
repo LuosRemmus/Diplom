@@ -4,6 +4,7 @@ import logging
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
+from backend.analyzer.analyzer import Analyzer
 from backend.deploy.config import API_HASH, API_ID
 from telethon import TelegramClient
 
@@ -24,13 +25,17 @@ async def get_comments(channel_name: str, limit: int = 5000):
     messages = await client.get_messages(channel_name, limit=limit)
     for message in messages:
         try:
-            comments.append(
-                {
-                    "channel": channel_name,
-                    "user_id": message.from_id.user_id,
-                    "message": message.message
-                }
-            )
+            analyzer = Analyzer(message.message)
+            flag = analyzer.check_for_flag()
+            if flag is not None:
+                comments.append(
+                    {
+                        "channel": channel_name,
+                        "user_id": message.from_id.user_id,
+                        "message": message.message,
+                        "flag": flag.value
+                    }
+                )
         except AttributeError:
             pass
     return comments
@@ -41,7 +46,7 @@ async def consumer(queue: asyncio.Queue):
         try:
             task = await queue.get()
             print(f"принял название канала: {task}")
-            await get_comments(channel_name=task)
+            await get_comments(channel_name=task, limit=200)
             queue.task_done()
         except Exception as ex:
             print(f"Ошибка, {ex}")
